@@ -40,45 +40,41 @@ def get_url_title(html):
             lst.append(temp_dict)
     return lst
 
+if __name__ == "__main__":
+    #用webdriver启动谷歌浏览器，记得修改路径哈
+    driver = webdriver.Chrome(executable_path='D:/QMDownload/chromedriver.exe')
 
+    #nickname = '中国传媒大学'# 公众号名称，想查谁都行
+    username = 'Lara1999@qq.com'# 账号
+    password = 'Lara1999' # 密码
 
-#用webdriver启动谷歌浏览器，记得修改路径哈
-driver = webdriver.Chrome()
+    login(username, password)
 
-#这个需要通过管理员扫码，可以用自己或朋友的微信公众号试试看
-nickname = '中国传媒大学'# 公众号名称，想查谁都行
-username = 'Lara1999@qq.com'# 账号
-password = 'Lara1999' # 密码
+    print("weui-desktop-pagination:", driver.find_elements_by_class_name('weui-desktop-pagination'))
+    page_num = int(driver.find_elements_by_class_name('weui-desktop-pagination__num')[-1].text.split('/')[-1].lstrip())
+    url_title_lst = []
 
-login(username, password)
-page_num = int(driver.find_elements_by_class_name('weui-desktop-pagination__num')[-1].text.split('/')[-1].lstrip())
+    for _ in range(1, page_num+1):
+        print("第",_,"页")
+        try:
+            time.sleep(6)#等待加载
+            url_title_lst += get_url_title(driver.page_source)
+            if _ == 1:
+                driver.find_element_by_xpath('//*[@id="list_container"]/div[2]/div/span[1]/a').click()
+                print("翻页")
+            elif _ != page_num:
+                driver.find_element_by_xpath('//*[@id="list_container"]/div[2]/div/span[1]/a[2]').click()
+                print("翻页")
+            
+        except:
+            print("第{}页失败".format(_))
+            break
 
-# 点击下一页
-url_title_lst = get_url_title(driver.page_source)
-
-for _ in range(1, page_num):
-    try:
-        #if _ == 1:
-        print("第一页")
-        pagination = driver.find_elements_by_class_name('weui-desktop-pagination')
-        print("第二页")
-        pagination.find_elements_by_tag_name('a').click()
-        #else:
-            #print("翻页")
-            #driver.find_element_by_xpath(".//a[@class='weui-desktop-btn weui-desktop-btn_default weui-desktop-btn_mini']")[2].click()
-        print("---------")
-        time.sleep(6)#如果这里数值太小很可能会导致操作频繁不能抓取
-        url_title_lst += get_url_title(driver.page_source)
-    except:
-        print("第{}页失败".format(_))
-        break
-
-#print(url_title_lst)
-#将结果写入csv文件
-with open('test_articles.csv',"wb+") as f:
-    writer = unicodecsv.writer(f)
-    writer.writerow(['date','url','title','read_num','reading'])
-    for item in url_title_lst:
-        writer.writerow([item['date'],item['url'],item['title'],item['read_num'],item['reading']])
-f.close()
+    #将结果写入csv文件
+    with open('test_articles.csv',"ab+") as f:
+        writer = unicodecsv.writer(f,encoding='utf-8-sig')
+        writer.writerow(['date','url','title','read_num','reading'])
+        for item in url_title_lst:
+            writer.writerow([item['date'],item['url'],item['title'],item['read_num'],item['reading']])
+    f.close()
 
