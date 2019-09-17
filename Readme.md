@@ -14,7 +14,3 @@ Collect articles detail data from WeChat Official Platform
 ## Future Plan
   1. 还有很多要抓取的信息，会比抓取这些内容更麻烦一些，不过难度不高，都是通过包中的click()或者find_element_by_xxx_name()函数
   2. 需要放到Flask框架中，实现Web中的可视化
-  
-## git操作
-  1. 更新本地库：进到本地learngit文件夹内，git pull
-  2. 上传至github库：git push origin king
