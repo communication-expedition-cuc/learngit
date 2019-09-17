@@ -2,6 +2,9 @@
 from selenium import webdriver
 import time
 import unicodecsv
+from bs4 import BeautifulSoup
+import re
+import requests
 
 """
 note: 需要使用selenium，chrome版本需要与chromedriver版本对应。具体见https://chromedriver.storage.googleapis.com/
@@ -35,8 +38,12 @@ def get_url_title(html):
                 'url': item.find_element_by_tag_name('a').get_attribute('href'),
                 'title': item.find_element_by_xpath(".//a[@class='weui-desktop-mass-appmsg__title']/span").text,
                 'read_num': item.find_element_by_xpath(".//span[@class='weui-desktop-mass-media__data__inner']").text,
-                'reading': item.find_element_by_xpath(".//div[@class='weui-desktop-mass-media__data appmsg-haokan']/span").text,
+                'reading': item.find_element_by_xpath(".//div[@class='weui-desktop-mass-media__data appmsg-haokan']/span").text
             }
+            r = requests.get(temp_dict['url'])
+            soup = BeautifulSoup(r.text, 'html.parser')
+            content = re.sub(u"\\<.*?\\>", "", str(soup.find_all('p')))
+            temp_dict['content'] = content
             lst.append(temp_dict)
     return lst
 
@@ -73,8 +80,8 @@ if __name__ == "__main__":
     #将结果写入csv文件
     with open('test_articles.csv',"ab+") as f:
         writer = unicodecsv.writer(f,encoding='utf-8-sig')
-        writer.writerow(['date','url','title','read_num','reading'])
+        writer.writerow(['date','url','title','read_num','reading','content'])
         for item in url_title_lst:
-            writer.writerow([item['date'],item['url'],item['title'],item['read_num'],item['reading']])
+            writer.writerow([item['date'],item['url'],item['title'],item['read_num'],item['reading'],item['content']])
     f.close()
 
